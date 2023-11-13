@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <opencv2/highgui/highgui.hpp>
@@ -40,9 +41,9 @@ int main(int argc, char **argv) {
         return 1;
     }
     //读取图片索引
-    string img_path = string(argv[1]) + "/rgb";
-    string rgb_path = string(argv[1]) + "/rgb.txt";
-    string traj_path = string(argv[1]) + "/groundtruth.txt";
+    string img_path = string(argv[1]) + "rgb";
+    string rgb_path = string(argv[1]) + "rgb.txt";
+    string traj_path = string(argv[1]) + "groundtruth.txt";
 #if USEDATASET
     ifstream fin_rgb(rgb_path);
     ifstream fin_traj(traj_path);
@@ -51,6 +52,11 @@ int main(int argc, char **argv) {
         return 1;
     }
     //fin.eof()读取到文件结尾返回true
+    // skip first three lines
+    string s0;
+    getline(fin_rgb,s0);
+    getline(fin_rgb,s0);
+    getline(fin_rgb,s0);
     while (!fin_rgb.eof()) {
         double time;
         string imagename;
@@ -63,6 +69,10 @@ int main(int argc, char **argv) {
     }
     // 初始化视窗
     visualizer.initDraw();
+    // skip first three lines
+    getline(fin_traj,s0);
+    getline(fin_traj,s0);
+    getline(fin_traj,s0);
     while (!fin_traj.eof()) {
         double time, tx, ty, tz, qx, qy, qz, qw;
         fin_traj >> time >> tx >> ty >> tz >> qx >> qy >> qz >> qw;
@@ -89,7 +99,7 @@ int main(int argc, char **argv) {
             visualizer.drawTraj(traj);
             //不是第一次进入
             if(traj.size() != 1){
-                string img_file = "/home/whf/文档/ORB_SLAM2/data/rgbd_dataset_freiburg1_room/" + ImageTimeName.front();
+                string img_file = string(argv[1]) + ImageTimeName.front();
                 img = cv::imread(img_file);
                 Pose_2D.find_feature_matches(img,imglast,keypoints_1,keypoints_2,matches);
                 drawKeypoints(img,keypoints_1,imgout,Scalar(0, 255, 0),DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
@@ -98,7 +108,7 @@ int main(int argc, char **argv) {
                 ImagSampleTime.pop();
                 ImageTimeName.pop();
             }else{
-                string img_file = "/home/whf/文档/ORB_SLAM2/data/rgbd_dataset_freiburg1_room/" + ImageTimeName.front();
+                string img_file = string(argv[1]) + ImageTimeName.front();
                 img = cv::imread(img_file);
                 imglast = img;
                 visualizer.displayImg(img, img);
